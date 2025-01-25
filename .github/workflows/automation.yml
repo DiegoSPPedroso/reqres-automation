@@ -1,11 +1,11 @@
-name: Automated Tests - Sauce Demo
+name: Automated Tests - Request and Response
 
 on:
   workflow_dispatch:
     inputs:
       adminEnvironmentUrl:
-        default: "https://www.saucedemo.com/v1/"
-        description: "Sauce Demo Automation"
+        default: "https://reqres.in"
+        description: "Request and Response Automation"
         required: true
       testSelection:
         description: "Select the tests to run"
