@@ -1,57 +1,9 @@
-name: Automated Tests - Request and Response
-
-on:
-  workflow_dispatch:
-    inputs:
-      adminEnvironmentUrl:
-        default: "https://reqres.in"
-        description: "Request and Response Automation"
-        required: true
-      testSelection:
-        description: "Select the tests to run"
-        required: true
-        type: choice
-        options:
-          - "All"
-          - "Create User"
-          - "Delete User"
-          - "List Users"
-          - "Update User"
-
-env:
-  DOMAIN_ADMIN: https://reqres.in
-  PATH_ADMIN: reqres-automation
-  TEST_PATH: ""
-
 jobs:
   cypress-tests:
     name: Automation - ${{ github.event.inputs.testSelection }}
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v3
-
-      - name: Set Test Path
-        run: |
-          case "${{ github.event.inputs.testSelection }}" in
-            "CreateUser")
-              echo "TEST_PATH=cypress/e2e/create-user.cy.jsx" >> $GITHUB_ENV
-              ;;
-            "DeleteUser")
-              echo "TEST_PATH=cypress/e2e/delete-user.cy.jsx" >> $GITHUB_ENV
-              ;;
-            "ListUsers")
-              echo "TEST_PATH=cypress/e2e/list-users.cy.jsx" >> $GITHUB_ENV
-              ;;
-            "UpdateUser")
-              echo "TEST_PATH=cypress/e2e/update-user.cy.jsx" >> $GITHUB_ENV
-              ;;
-            "All")
-              echo "TEST_PATH=cypress/e2e/**/*.cy.{js,jsx}" >> $GITHUB_ENV
-              ;;
-          esac
-
-      - name: Set Dynamic Job Name
-        run: echo "JOB_NAME=Automated Tests - ReqRes - ${{ github.event.inputs.testSelection }}" >> $GITHUB_ENV
 
       - name: Install dependencies and Execute Cypress Tests
         run: |
@@ -63,22 +15,30 @@ jobs:
             npm run cypress:run -- --spec "${{ env.TEST_PATH }}"
           fi
 
-      - name: Send email with Cypress test results
-        if: success() || failure()
-        uses: mohammad1001/send-email@v1
+      - name: Upload Cypress screenshots and videos
+        uses: actions/upload-artifact@v3
         with:
-          smtp-server: smtp.gmail.com
-          smtp-port: 587
-          smtp-user: ${{ secrets.GMAIL_USERNAME }}
-          smtp-pass: ${{ secrets.GMAIL_PASSWORD }}
-          to-email: "diegospedroso@gmail.com"  # Substitua pelo seu e-mail
-          subject: "Cypress Test Results - ${{ github.event.inputs.testSelection }}"
+          name: cypress-artifacts
+          path: |
+            cypress/screenshots/
+            cypress/videos/
+
+      - name: Send email with Cypress results
+        uses: mohammadreza/send-email@v1
+        with:
+          smtp_server: smtp.gmail.com
+          smtp_port: 587
+          smtp_username: ${{ secrets.GMAIL_USERNAME }}
+          smtp_password: ${{ secrets.GMAIL_PASSWORD }}
+          to: "destinatario@example.com"
+          subject: "Cypress Test Results"
           body: |
-            Hello, 
+            Hello,
             
-            The Cypress tests for the selection '${{ github.event.inputs.testSelection }}' have been completed.
+            Please find the attached Cypress screenshots and videos of the latest test run.
             
-            Please find attached the screenshots and videos from the tests.
+            Best regards,
+            Your Automation Team
           attachments: |
-            cypress/screenshots/*,
-            cypress/videos/*
+            cypress/screenshots/
+            cypress/videos/
