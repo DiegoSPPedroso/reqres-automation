@@ -1,10 +1,11 @@
 const { defineConfig } = require("cypress");
 
 module.exports = defineConfig({
-  video: true,
-  screenshotOnRunFailure: true,
-  videosFolder: 'cypress/videos',
-  screenshotsFolder: 'cypress/screenshots',
+  video: true, // Habilita a gravação de vídeos
+  screenshotOnRunFailure: true, // Tira screenshots em falhas
+  videosFolder: 'cypress/videos', // Pasta onde os vídeos serão salvos
+  screenshotsFolder: 'cypress/screenshots', // Pasta onde as capturas de tela serão salvas
+
   component: {
     devServer: {
       framework: "react",
@@ -14,8 +15,8 @@ module.exports = defineConfig({
 
   e2e: {
     setupNodeEvents(on, config) {
-      // implement node event listeners here
+      // Implementar listeners de eventos se necessário
     },
-    baseUrl: 'https://reqres.in'
+    baseUrl: 'https://reqres.in', // Definir a base URL
   },
 });
