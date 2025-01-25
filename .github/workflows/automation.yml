@@ -87,11 +87,11 @@ jobs:
         with:
           server_address: smtp.example.com
           server_port: 587
-          username: ${{ secrets.SMTP_USERNAME }}
-          password: ${{ secrets.SMTP_PASSWORD }}
+          username: ${{ secrets.GMAIL_USERNAME }}
+          password: ${{ secrets.GMAIL_PASSWORD }}
           subject: "Cypress Test Results - ${{ github.event.inputs.testSelection }}"
-          to: "recipient@example.com"
-          from: "sender@example.com"
+          to: "diegospedroso@gmail.com"
+          from: "diegospedroso@gmail.com"
           body: |
             The Cypress tests for selection `${{ github.event.inputs.testSelection }}` have been completed.
             Please find the attached artifacts for details.
