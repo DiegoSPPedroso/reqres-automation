@@ -65,20 +65,18 @@ jobs:
             npm run cypress:run -- --spec "${{ env.TEST_PATH }}"
           fi
 
-      - name: List Cypress output files
+      - name: Debug - List files after tests
         run: |
-          echo "Listing files in cypress/screenshots"
-          ls -R cypress/screenshots || echo "No screenshots found"
-          echo "Listing files in cypress/videos"
-          ls -R cypress/videos || echo "No videos found"
+          echo "Listing files in cypress"
+          ls -R cypress || echo "No files found in cypress"
 
       - name: Upload Cypress Artifacts
-        uses: actions/upload-artifact@v4  # Faz o upload dos artefatos (screenshots, vídeos)
+        uses: actions/upload-artifact@v4
         with:
-          name: cypress-artifacts  # Nome do artefato
+          name: cypress-artifacts
           path: |
-            cypress/screenshots/*  # Caminho para screenshots
-            cypress/videos/*        # Caminho para vídeos dos testes
+            cypress/videos/*.mp4  # Caminho para vídeos dos testes
+            cypress/screenshots/*  # Caminho para screenshots (certifique-se de que o Cypress está gerando isso)
 
       - name: Download Cypress artifacts
         uses: actions/download-artifact@v3  # Baixa os artefatos
