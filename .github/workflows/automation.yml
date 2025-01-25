@@ -17,6 +17,11 @@ on:
           - "Delete User"
           - "List Users"
           - "Update User"
+      email:
+        description: "Email address to send the test results"
+        required: true
+        type: string
+        default: "diegospedroso@gmail.com"  # E-mail padrão, mas pode ser modificado pelo usuário
 
 env:
   DOMAIN_ADMIN: https://reqres.in
@@ -98,7 +103,7 @@ jobs:
           username: ${{ secrets.GMAIL_USERNAME }}
           password: ${{ secrets.GMAIL_PASSWORD }}
           subject: "Cypress Test Results - ${{ github.event.inputs.testSelection }}"
-          to: "diegospedroso@gmail.com"
+          to: ${{ github.event.inputs.email }}
           from: "diegospedroso@gmail.com"
           body: |
             The Cypress tests for selection `${{ github.event.inputs.testSelection }}` have been completed.
