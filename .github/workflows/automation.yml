@@ -74,12 +74,12 @@ jobs:
 
       # Enviar e-mail com os resultados dos testes
       - name: Send email with Cypress results
-        uses: mohammadreza/send-email@v1
+        uses: dawidd6/action-send-mail@v3
         with:
-          smtp_server: smtp.gmail.com
-          smtp_port: 587
-          smtp_username: ${{ secrets.GMAIL_USERNAME }}
-          smtp_password: ${{ secrets.GMAIL_PASSWORD }}
+          server_address: smtp.gmail.com
+          server_port: 587
+          username: ${{ secrets.GMAIL_USERNAME }}
+          password: ${{ secrets.GMAIL_PASSWORD }}
           to: "diegospedroso@gmail.com"  # Substitua pelo seu e-mail
           subject: "Cypress Test Results"
           body: |
