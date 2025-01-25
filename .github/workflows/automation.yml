@@ -76,7 +76,8 @@ jobs:
           name: cypress-artifacts
           path: |
             cypress/videos/*.mp4  # Caminho para vídeos dos testes
-            cypress/screenshots/*  # Caminho para screenshots (certifique-se de que o Cypress está gerando isso)
+            # Remover o caminho de screenshots se não houver screenshots gerados
+            # cypress/screenshots/*  # Caminho para screenshots (comentado, pois não foi encontrado)
 
       - name: Download Cypress artifacts
         uses: actions/download-artifact@v3  # Baixa os artefatos
