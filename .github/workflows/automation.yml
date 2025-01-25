@@ -1,0 +1,64 @@
+name: Automated Tests - Sauce Demo
+
+on:
+  workflow_dispatch:
+    inputs:
+      adminEnvironmentUrl:
+        default: "https://www.saucedemo.com/v1/"
+        description: "Sauce Demo Automation"
+        required: true
+      testSelection:
+        description: "Select the tests to run"
+        required: true
+        type: choice
+        options:
+          - "All"
+          - "Create User"
+          - "Delete User"
+          - "List Users"
+          - "Update User"
+
+env:
+  DOMAIN_ADMIN: https://reqres.in
+  PATH_ADMIN: reqres-automation
+  TEST_PATH: ""
+
+jobs:
+  cypress-tests:
+    name: Automation - ${{ github.event.inputs.testSelection }}
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set Test Path
+        run: |
+          case "${{ github.event.inputs.testSelection }}" in
+            "CreateUser")
+              echo "TEST_PATH=cypress/e2e/create-user.cy.jsx" >> $GITHUB_ENV
+              ;;
+            "DeleteUser")
+              echo "TEST_PATH=cypress/e2e/delete-user.cy.jsx" >> $GITHUB_ENV
+              ;;
+            "ListUsers")
+              echo "TEST_PATH=cypress/e2e/list-users.cy.jsx" >> $GITHUB_ENV
+              ;;
+            "UpdateUser")
+              echo "TEST_PATH=cypress/e2e/update-user.cy.jsx" >> $GITHUB_ENV
+              ;;
+            "All")
+              echo "TEST_PATH=cypress/e2e/**/*.cy.{js,jsx}" >> $GITHUB_ENV
+              ;;
+          esac
+
+      - name: Set Dynamic Job Name
+        run: echo "JOB_NAME=Automated Tests - ReqRes - ${{ github.event.inputs.testSelection }}" >> $GITHUB_ENV
+
+      - name: Install dependencies and Execute Cypress Tests
+        run: |
+          npm install
+          export CYPRESS_BASE_URL=https://reqres.in
+          if [[ "${{ github.event.inputs.testSelection }}" == "All" ]]; then
+            npm run cypress:run
+          else
+            npm run cypress:run -- --spec "${{ env.TEST_PATH }}"
+          fi
