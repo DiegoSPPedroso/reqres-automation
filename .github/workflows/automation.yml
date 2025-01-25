@@ -1,10 +1,58 @@
+name: Automated Tests - Request and Response
+
+on:
+  workflow_dispatch:
+    inputs:
+      adminEnvironmentUrl:
+        default: "https://reqres.in"
+        description: "Request and Response Automation"
+        required: true
+      testSelection:
+        description: "Select the tests to run"
+        required: true
+        type: choice
+        options:
+          - "All"
+          - "Create User"
+          - "Delete User"
+          - "List Users"
+          - "Update User"
+
+env:
+  DOMAIN_ADMIN: https://reqres.in
+  PATH_ADMIN: reqres-automation
+  TEST_PATH: ""
+
 jobs:
   cypress-tests:
     name: Automation - ${{ github.event.inputs.testSelection }}
     runs-on: ubuntu-24.04
     steps:
+      # Checkout do código
       - uses: actions/checkout@v3
 
+      # Definir o caminho de teste com base na seleção
+      - name: Set Test Path
+        run: |
+          case "${{ github.event.inputs.testSelection }}" in
+            "CreateUser")
+              echo "TEST_PATH=cypress/e2e/create-user.cy.jsx" >> $GITHUB_ENV
+              ;;
+            "DeleteUser")
+              echo "TEST_PATH=cypress/e2e/delete-user.cy.jsx" >> $GITHUB_ENV
+              ;;
+            "ListUsers")
+              echo "TEST_PATH=cypress/e2e/list-users.cy.jsx" >> $GITHUB_ENV
+              ;;
+            "UpdateUser")
+              echo "TEST_PATH=cypress/e2e/update-user.cy.jsx" >> $GITHUB_ENV
+              ;;
+            "All")
+              echo "TEST_PATH=cypress/e2e/**/*.cy.{js,jsx}" >> $GITHUB_ENV
+              ;;
+          esac
+
+      # Instalar dependências e executar testes Cypress
       - name: Install dependencies and Execute Cypress Tests
         run: |
           npm install
@@ -15,6 +63,7 @@ jobs:
             npm run cypress:run -- --spec "${{ env.TEST_PATH }}"
           fi
 
+      # Upload dos artefatos (screenshots e vídeos)
       - name: Upload Cypress screenshots and videos
         uses: actions/upload-artifact@v3
         with:
@@ -23,6 +72,7 @@ jobs:
             cypress/screenshots/
             cypress/videos/
 
+      # Enviar e-mail com os resultados dos testes
       - name: Send email with Cypress results
         uses: mohammadreza/send-email@v1
         with:
@@ -30,13 +80,13 @@ jobs:
           smtp_port: 587
           smtp_username: ${{ secrets.GMAIL_USERNAME }}
           smtp_password: ${{ secrets.GMAIL_PASSWORD }}
-          to: "destinatario@example.com"
+          to: "diegospedroso@gmail.com"  # Substitua pelo seu e-mail
           subject: "Cypress Test Results"
           body: |
             Hello,
-            
+
             Please find the attached Cypress screenshots and videos of the latest test run.
-            
+
             Best regards,
             Your Automation Team
           attachments: |
