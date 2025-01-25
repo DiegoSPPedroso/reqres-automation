@@ -21,7 +21,7 @@ on:
         description: "Email address to send the test results"
         required: true
         type: string
-        default: "diegospedroso@gmail.com"  # E-mail padrão, mas pode ser modificado pelo usuário
+        default: "diegospedroso@gmail.com"
 
 env:
   DOMAIN_ADMIN: https://reqres.in
@@ -37,23 +37,15 @@ jobs:
 
       - name: Set Test Path
         run: |
-          case "${{ github.event.inputs.testSelection }}" in
-            "Create User")
-              echo "TEST_PATH=cypress/e2e/create-user.cy.jsx" >> $GITHUB_ENV
-              ;;
-            "Delete User")
-              echo "TEST_PATH=cypress/e2e/delete-user.cy.jsx" >> $GITHUB_ENV
-              ;;
-            "List Users")
-              echo "TEST_PATH=cypress/e2e/list-users.cy.jsx" >> $GITHUB_ENV
-              ;;
-            "Update User")
-              echo "TEST_PATH=cypress/e2e/update-user.cy.jsx" >> $GITHUB_ENV
-              ;;
-            "All")
-              echo "TEST_PATH=cypress/e2e/**/*.cy.{js,jsx}" >> $GITHUB_ENV
-              ;;
-          esac
+          declare -A testPaths
+          testPaths=(
+            ["Create User"]="cypress/e2e/create-user.cy.jsx"
+            ["Delete User"]="cypress/e2e/delete-user.cy.jsx"
+            ["List Users"]="cypress/e2e/list-users.cy.jsx"
+            ["Update User"]="cypress/e2e/update-user.cy.jsx"
+            ["All"]="cypress/e2e/**/*.cy.{js,jsx}"
+          )
+          echo "TEST_PATH=${testPaths[${{ github.event.inputs.testSelection }}]}" >> $GITHUB_ENV
 
       - name: Install dependencies and Execute Cypress Tests
         run: |
@@ -61,38 +53,20 @@ jobs:
           export CYPRESS_BASE_URL=https://reqres.in
           npm run cypress:run -- --spec "${{ env.TEST_PATH }}"
 
-      - name: List Cypress Output Files
+      - name: Check and Upload Cypress Artifacts
         run: |
-          echo "Listing all generated files in cypress directory:"
-          ls -R cypress || echo "No files found."
-
-      - name: Check if Screenshots exist
-        run: |
-          if [ "$(ls -A cypress/screenshots)" ]; then
-            echo "Screenshots found"
-          else
-            echo "No screenshots found"
-          fi
-
-      - name: Upload Cypress Videos
-        uses: actions/upload-artifact@v4
-        with:
-          name: cypress-videos
-          path: |
-            cypress/videos/*.mp4
-
-      - name: Upload Cypress Screenshots (if any)
-        uses: actions/upload-artifact@v4
-        with:
-          name: cypress-screenshots
-          path: |
-            cypress/screenshots/*
-
-      - name: Debug Artifact Upload
-        run: |
-          echo "Checking artifacts uploaded:"
-          ls -R cypress/videos || echo "No video files found."
-          ls -R cypress/screenshots || echo "No screenshot files found."
+          for dir in videos screenshots; do
+            if [ "$(ls -A cypress/$dir)" ]; then
+              echo "$dir found"
+              ls -R cypress/$dir
+              actions/upload-artifact@v4
+              with:
+                name: cypress-$dir
+                path: cypress/$dir/*
+            else
+              echo "No $dir found"
+            fi
+          done
 
       - name: Send Test Results via Email
         if: always()
