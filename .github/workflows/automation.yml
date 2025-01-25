@@ -65,8 +65,12 @@ jobs:
           to: ${{ github.event.inputs.email }}
           from: "diegospedroso@gmail.com"
           body: |
-            The Cypress tests for selection `${{ github.event.inputs.testSelection }}` have been completed.
-            Please find the attached artifacts for details.
+            Hello,
+
+            The Cypress action tests for the selection ${{ github.event.inputs.testSelection }} have been completed.
+
+            Attached, you will find videos for the tests that passed. However, if any test failed, you will find a screenshot of the error.
+            
           attachments: |
             cypress/videos/*.mp4
             cypress/screenshots/*
