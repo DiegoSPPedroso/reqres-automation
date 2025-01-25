@@ -80,3 +80,21 @@ jobs:
           echo "Checking artifacts uploaded:"
           ls -R cypress/videos || echo "No video files found."
           ls -R cypress/screenshots || echo "No screenshot files found."
+
+      - name: Send Test Results via Email
+        if: always()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.example.com
+          server_port: 587
+          username: ${{ secrets.SMTP_USERNAME }}
+          password: ${{ secrets.SMTP_PASSWORD }}
+          subject: "Cypress Test Results - ${{ github.event.inputs.testSelection }}"
+          to: "recipient@example.com"
+          from: "sender@example.com"
+          body: |
+            The Cypress tests for selection `${{ github.event.inputs.testSelection }}` have been completed.
+            Please find the attached artifacts for details.
+          attachments: |
+            cypress/videos/*.mp4
+            cypress/screenshots/*
