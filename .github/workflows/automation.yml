@@ -53,21 +53,6 @@ jobs:
           export CYPRESS_BASE_URL=https://reqres.in
           npm run cypress:run -- --spec "${{ env.TEST_PATH }}"
 
-      - name: Check and Upload Cypress Artifacts
-        run: |
-          for dir in videos screenshots; do
-            if [ "$(ls -A cypress/$dir)" ]; then
-              echo "$dir found"
-              ls -R cypress/$dir
-              actions/upload-artifact@v4
-              with:
-                name: cypress-$dir
-                path: cypress/$dir/*
-            else
-              echo "No $dir found"
-            fi
-          done
-
       - name: Send Test Results via Email
         if: always()
         uses: dawidd6/action-send-mail@v3
