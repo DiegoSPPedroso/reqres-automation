@@ -28,10 +28,8 @@ jobs:
     name: Automation - ${{ github.event.inputs.testSelection }}
     runs-on: ubuntu-24.04
     steps:
-      # Checkout do código
       - uses: actions/checkout@v3
 
-      # Definir o caminho de teste com base na seleção
       - name: Set Test Path
         run: |
           case "${{ github.event.inputs.testSelection }}" in
@@ -52,7 +50,9 @@ jobs:
               ;;
           esac
 
-      # Instalar dependências e executar testes Cypress
+      - name: Set Dynamic Job Name
+        run: echo "JOB_NAME=Automated Tests - ReqRes - ${{ github.event.inputs.testSelection }}" >> $GITHUB_ENV
+
       - name: Install dependencies and Execute Cypress Tests
         run: |
           npm install
@@ -63,16 +63,27 @@ jobs:
             npm run cypress:run -- --spec "${{ env.TEST_PATH }}"
           fi
 
-      # Upload dos artefatos (screenshots e vídeos) usando a versão v4
-      - name: Upload Cypress screenshots and videos
+      - name: Upload Cypress Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: cypress-artifacts
           path: |
-            cypress/screenshots/
-            cypress/videos/
+            cypress/screenshots
+            cypress/videos
 
-      # Enviar e-mail com os resultados dos testes
+      # Baixar o artefato
+      - name: Download Cypress artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: cypress-artifacts
+          path: ./artifacts
+
+      # Compactar artefatos se necessário
+      - name: Compress artifacts
+        run: |
+          zip -r ./artifacts/cypress-artifacts.zip ./artifacts
+
+      # Enviar e-mail com o arquivo ZIP anexado
       - name: Send email with Cypress results
         uses: dawidd6/action-send-mail@v4
         with:
@@ -80,16 +91,14 @@ jobs:
           server_port: 587
           username: ${{ secrets.GMAIL_USERNAME }}
           password: ${{ secrets.GMAIL_PASSWORD }}
-          from: ${{ secrets.GMAIL_USERNAME }}  # Campo 'from' adicionado
-          to: "diegospedroso@gmail.com"  # Substitua pelo seu e-mail
+          from: ${{ secrets.GMAIL_USERNAME }}
+          to: "diegospedroso@gmail.com"
           subject: "Cypress Test Results"
           body: |
             Hello,
 
-            Please find the attached Cypress screenshots and videos of the latest test run.
+            Please find the attached Cypress test artifacts.
 
             Best regards,
             Your Automation Team
-          attachments: |
-            cypress/screenshots/
-            cypress/videos/
+          attachments: ./artifacts/cypress-artifacts.zip
