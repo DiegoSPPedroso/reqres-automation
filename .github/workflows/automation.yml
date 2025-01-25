@@ -28,21 +28,22 @@ jobs:
     name: Automation - ${{ github.event.inputs.testSelection }}
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v3  # Faz checkout do repositório
 
       - name: Set Test Path
         run: |
+          # Define o caminho para os testes com base na seleção do input
           case "${{ github.event.inputs.testSelection }}" in
-            "CreateUser")
+            "Create User")
               echo "TEST_PATH=cypress/e2e/create-user.cy.jsx" >> $GITHUB_ENV
               ;;
-            "DeleteUser")
+            "Delete User")
               echo "TEST_PATH=cypress/e2e/delete-user.cy.jsx" >> $GITHUB_ENV
               ;;
-            "ListUsers")
+            "List Users")
               echo "TEST_PATH=cypress/e2e/list-users.cy.jsx" >> $GITHUB_ENV
               ;;
-            "UpdateUser")
+            "Update User")
               echo "TEST_PATH=cypress/e2e/update-user.cy.jsx" >> $GITHUB_ENV
               ;;
             "All")
@@ -55,8 +56,9 @@ jobs:
 
       - name: Install dependencies and Execute Cypress Tests
         run: |
-          npm install
-          export CYPRESS_BASE_URL=https://reqres.in
+          npm install  # Instala dependências do Cypress
+          export CYPRESS_BASE_URL=https://reqres.in  # Define a URL base para os testes
+          # Executa os testes, dependendo da seleção do input
           if [[ "${{ github.event.inputs.testSelection }}" == "All" ]]; then
             npm run cypress:run
           else
@@ -64,33 +66,31 @@ jobs:
           fi
 
       - name: Upload Cypress Artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4  # Faz o upload dos artefatos (screenshots, vídeos)
         with:
-          name: cypress-artifacts
+          name: cypress-artifacts  # Nome do artefato
           path: |
-            cypress/screenshots
-            cypress/videos
+            cypress/screenshots  # Caminho para screenshots
+            cypress/videos        # Caminho para vídeos dos testes
 
-      # Baixar o artefato com a versão mais recente da ação
       - name: Download Cypress artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v3  # Baixa os artefatos
         with:
           name: cypress-artifacts
-          path: ./artifacts
+          path: ./artifacts  # Diretório para onde os artefatos serão baixados
 
-      # Compactar artefatos se necessário
       - name: Compress artifacts
         run: |
+          # Compacta os artefatos para envio por e-mail
           zip -r ./artifacts/cypress-artifacts.zip ./artifacts
 
-      # Enviar e-mail com o arquivo ZIP anexado
       - name: Send email with Cypress results
-        uses: dawidd6/action-send-mail@v4
+        uses: dawidd6/action-send-mail@v4  # Envia o e-mail com os artefatos compactados
         with:
           server_address: smtp.gmail.com
           server_port: 587
-          username: ${{ secrets.GMAIL_USERNAME }}
-          password: ${{ secrets.GMAIL_PASSWORD }}
+          username: ${{ secrets.GMAIL_USERNAME }}  # Definido nos secrets do GitHub
+          password: ${{ secrets.GMAIL_PASSWORD }}  # Definido nos secrets do GitHub
           from: ${{ secrets.GMAIL_USERNAME }}
           to: "diegospedroso@gmail.com"
           subject: "Cypress Test Results"
@@ -101,4 +101,4 @@ jobs:
 
             Best regards,
             Your Automation Team
-          attachments: ./artifacts/cypress-artifacts.zip
+          attachments: ./artifacts/cypress-artifacts.zip  # Anexa o arquivo compactado ao e-mail
