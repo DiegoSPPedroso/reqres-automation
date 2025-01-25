@@ -62,3 +62,23 @@ jobs:
           else
             npm run cypress:run -- --spec "${{ env.TEST_PATH }}"
           fi
+
+      - name: Send email with Cypress test results
+        if: success() || failure()
+        uses: mohammad1001/send-email@v1
+        with:
+          smtp-server: smtp.gmail.com
+          smtp-port: 587
+          smtp-user: ${{ secrets.GMAIL_USERNAME }}
+          smtp-pass: ${{ secrets.GMAIL_PASSWORD }}
+          to-email: "diegospedroso@gmail.com"  # Substitua pelo seu e-mail
+          subject: "Cypress Test Results - ${{ github.event.inputs.testSelection }}"
+          body: |
+            Hello, 
+            
+            The Cypress tests for the selection '${{ github.event.inputs.testSelection }}' have been completed.
+            
+            Please find attached the screenshots and videos from the tests.
+          attachments: |
+            cypress/screenshots/*,
+            cypress/videos/*
