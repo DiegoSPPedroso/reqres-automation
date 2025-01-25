@@ -63,9 +63,9 @@ jobs:
             npm run cypress:run -- --spec "${{ env.TEST_PATH }}"
           fi
 
-      # Upload dos artefatos (screenshots e vídeos)
+      # Upload dos artefatos (screenshots e vídeos) usando a versão v4
       - name: Upload Cypress screenshots and videos
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: cypress-artifacts
           path: |
@@ -74,12 +74,13 @@ jobs:
 
       # Enviar e-mail com os resultados dos testes
       - name: Send email with Cypress results
-        uses: dawidd6/action-send-mail@v3
+        uses: dawidd6/action-send-mail@v4
         with:
           server_address: smtp.gmail.com
           server_port: 587
           username: ${{ secrets.GMAIL_USERNAME }}
           password: ${{ secrets.GMAIL_PASSWORD }}
+          from: ${{ secrets.GMAIL_USERNAME }}  # Campo 'from' adicionado
           to: "diegospedroso@gmail.com"  # Substitua pelo seu e-mail
           subject: "Cypress Test Results"
           body: |
