@@ -71,9 +71,9 @@ jobs:
             cypress/screenshots
             cypress/videos
 
-      # Baixar o artefato
+      # Baixar o artefato com a versão mais recente da ação
       - name: Download Cypress artifacts
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: cypress-artifacts
           path: ./artifacts
