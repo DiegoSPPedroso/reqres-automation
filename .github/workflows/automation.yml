@@ -26,13 +26,12 @@ env:
 jobs:
   cypress-tests:
     name: Automation - ${{ github.event.inputs.testSelection }}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3  # Faz checkout do repositório
+      - uses: actions/checkout@v3
 
       - name: Set Test Path
         run: |
-          # Define o caminho para os testes com base na seleção do input
           case "${{ github.event.inputs.testSelection }}" in
             "Create User")
               echo "TEST_PATH=cypress/e2e/create-user.cy.jsx" >> $GITHUB_ENV
@@ -51,60 +50,33 @@ jobs:
               ;;
           esac
 
-      - name: Set Dynamic Job Name
-        run: echo "JOB_NAME=Automated Tests - ReqRes - ${{ github.event.inputs.testSelection }}" >> $GITHUB_ENV
-
       - name: Install dependencies and Execute Cypress Tests
         run: |
-          npm install  # Instala dependências do Cypress
-          export CYPRESS_BASE_URL=https://reqres.in  # Define a URL base para os testes
-          # Executa os testes, dependendo da seleção do input
-          if [[ "${{ github.event.inputs.testSelection }}" == "All" ]]; then
-            npm run cypress:run
-          else
-            npm run cypress:run -- --spec "${{ env.TEST_PATH }}"
-          fi
+          npm install
+          export CYPRESS_BASE_URL=https://reqres.in
+          npm run cypress:run -- --spec "${{ env.TEST_PATH }}"
 
-      - name: Debug - List files after tests
+      - name: List Cypress Output Files
         run: |
-          echo "Listing files in cypress"
-          ls -R cypress || echo "No files found in cypress"
+          echo "Listing all generated files in cypress directory:"
+          ls -R cypress || echo "No files found."
 
-      - name: Upload Cypress Artifacts
+      - name: Upload Cypress Videos
         uses: actions/upload-artifact@v4
         with:
-          name: cypress-artifacts
+          name: cypress-videos
           path: |
-            cypress/videos/*.mp4  # Caminho para vídeos dos testes
-            # Remover o caminho de screenshots se não houver screenshots gerados
-            # cypress/screenshots/*  # Caminho para screenshots (comentado, pois não foi encontrado)
+            cypress/videos/*.mp4
 
-      - name: Download Cypress artifacts
-        uses: actions/download-artifact@v3  # Baixa os artefatos
+      - name: Upload Cypress Screenshots (if any)
+        uses: actions/upload-artifact@v4
         with:
-          name: cypress-artifacts
-          path: ./artifacts  # Diretório para onde os artefatos serão baixados
+          name: cypress-screenshots
+          path: |
+            cypress/screenshots/*
 
-      - name: Compress artifacts
+      - name: Debug Artifact Upload
         run: |
-          # Compacta os artefatos para envio por e-mail
-          zip -r ./artifacts/cypress-artifacts.zip ./artifacts
-
-      - name: Send email with Cypress results
-        uses: dawidd6/action-send-mail@v4  # Envia o e-mail com os artefatos compactados
-        with:
-          server_address: smtp.gmail.com
-          server_port: 587
-          username: ${{ secrets.GMAIL_USERNAME }}  # Definido nos secrets do GitHub
-          password: ${{ secrets.GMAIL_PASSWORD }}  # Definido nos secrets do GitHub
-          from: ${{ secrets.GMAIL_USERNAME }}
-          to: "diegospedroso@gmail.com"
-          subject: "Cypress Test Results"
-          body: |
-            Hello,
-
-            Please find the attached Cypress test artifacts.
-
-            Best regards,
-            Your Automation Team
-          attachments: ./artifacts/cypress-artifacts.zip  # Anexa o arquivo compactado ao e-mail
+          echo "Checking artifacts uploaded:"
+          ls -R cypress/videos || echo "No video files found."
+          ls -R cypress/screenshots || echo "No screenshot files found."
