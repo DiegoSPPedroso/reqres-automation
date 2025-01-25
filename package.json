@@ -1,0 +1,9 @@
+{
+  "scripts": {
+    "cypress:run": "cypress run --browser chrome"
+  },
+  "dependencies": {
+    "@faker-js/faker": "^9.4.0",
+    "cypress": "^14.0.0"
+  }
+}
