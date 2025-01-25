@@ -61,6 +61,14 @@ jobs:
           echo "Listing all generated files in cypress directory:"
           ls -R cypress || echo "No files found."
 
+      - name: Check if Screenshots exist
+        run: |
+          if [ "$(ls -A cypress/screenshots)" ]; then
+            echo "Screenshots found"
+          else
+            echo "No screenshots found"
+          fi
+
       - name: Upload Cypress Videos
         uses: actions/upload-artifact@v4
         with:
